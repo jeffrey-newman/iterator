@@ -1,4 +1,4 @@
-xsltproc --nonet --xinclude %BOOST%/tools/boostbook/xsl/docbook.xsl source/moving_window.xml > temp.xml
+xsltproc --nonet --xinclude %BOOST%/tools/boostbook/xsl/docbook.xsl source/iterator.xml > temp.xml
 xsltproc --nonet --xinclude %BOOST%/tools/boostbook/xsl/html.xsl boostbook/db2html.xsl temp.xml
 md html
 copy index.html html\index.html

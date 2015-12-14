@@ -22,7 +22,7 @@
     <programlisting>std::vector&lt;int&gt; a = {1,2,3,4,5};
 std::vector&lt;int&gt; b = {100, 200, 300, 400, 500};
 using iter = std::vector&lt;int&gt;::iterator;
-using zip = blink::iterator::zip_iterator&lt;iter, iter&gt;;
+using zip = zip_iterator&lt;iter, iter&gt;;
 
 zip begin(a.begin(), b.begin());
 zip end(a.end(), b.end());

@@ -4,9 +4,9 @@
 <title>Motivating Example</title>
 <link rel="stylesheet" href="../boostbook.css" type="text/css">
 <meta name="generator" content="DocBook XSL Stylesheets V1.78.1">
-<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Moving Window">
-<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Moving Window">
-<link rel="prev" href="../index.html" title="Chapter&#160;1.&#160;Moving Window">
+<link rel="home" href="../index.html" title="Chapter&#160;1.&#160;Iterator">
+<link rel="up" href="../index.html" title="Chapter&#160;1.&#160;Iterator">
+<link rel="prev" href="../index.html" title="Chapter&#160;1.&#160;Iterator">
 <link rel="next" href="s03.html" title="Installation">
 </head>
 <body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
@@ -15,63 +15,38 @@
 </div>
 <div class="section">
 <div class="titlepage"><div><div><h2 class="title" style="clear: both">
-<a name="idm1569205040"></a>Motivating Example</h2></div></div></div>
-<p>The following is an example of a program making use of the built-in
-  edge-density indicator:</p>
-<pre class="programlisting">
-#include &lt;moving_window/indicator/edge_density.h&gt;
-#include &lt;moving_window/moving_window_view.h&gt;
-#include &lt;moving_window/utility.h&gt;
-#include &lt;moving_window/window.h&gt;
-#include &lt;moving_window/zip_range.h&gt;
+<a name="idm1572663872"></a>Motivating Example</h2></div></div></div>
+<p>The following is an example of a program iterating over three ranges
+  in parallel.</p>
+<pre class="programlisting">#include &lt;blink\iterator\zip_range.h&gt;
 
 #include &lt;functional&gt;
-#include &lt;tuple&gt;
-
-using namespace moving_window;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;vector&gt;
 
 int main()
 {
-  double radius = 10;
-
-  // open a raster data set
-  auto input = open_gdal_raster&lt;int&gt;("input.tif", GA_ReadOnly);
-
-  // create a raster data set, with same dimensions as input
-  auto output = create_gdal_raster_from_model&lt;double&gt;("output.tif", input);
-
-  // create the window to use
-  auto window = make_square_window(radius);
-
-  // Create a range over the windowed indicator for all pixels
-  auto window_view = make_moving_window_view(edge_density_tag(), window, &amp;input);
-
-  // Create a range to simultaneously iterate over output and window_view
-  auto zip = make_zip_range(std::ref(output), std::ref(window_view));
-
-  // extract the indicator value for each pixel and assign to output
-  for (auto&amp; i : zip) {
-    auto&amp; output_i = std::get&lt;0&gt;(i);
-    auto&amp; window_i = std::get&lt;1&gt;(i);
-    output_i = window_i.extract().get();
+  std::vector&lt;int&gt; ints = { 1, 2, 3, 4 };
+  std::vector&lt;std::string&gt; roman = { "I", "II", "III", "IV" };
+  std::vector&lt;std::string&gt; strs = { "one", "two", "three", "four" };
+  
+  // use std::ref to avoid copying the range
+  auto zip_range = blink::iterator::make_zip_range(std::ref(ints), std::ref(roman), strs);
+  
+  for (auto&amp;&amp; i : zip_range)
+  {
+    std::cout &lt;&lt; std::get&lt;0&gt;(i) &lt;&lt; " " &lt;&lt; std::get&lt;1&gt;(i) &lt;&lt; " " &lt;&lt; std::get&lt;2&gt;(i) &lt;&lt; std::endl;
   }
-
   return 0;
-}</pre>
-<p>The central element of the example is the window_view; this is a range
-  that allows iterating over all pixel locations in the raster dataset.
-  However, instead of giving access to the pixel values it gives access to the
-  indicator that summarizes the window surrounding the pixel. At each
-  iteration step the window moves along with the pixel.</p>
-<p>The zip range makes it possible to iterate simultaneously over both
-  the output dataset and the moving window view of the input data set. Thus at
-  each step we can extract the indicator value and assign it to the
-  corresponding pixel in the output raster.</p>
-<p>The<code class="computeroutput"> extract()</code> member function of the <code class="computeroutput">window_view
-  </code>returns the indicator associated with <code class="computeroutput">edge_density_tag</code>,
-  in this case for the square window with a radius of 40 pixels. The
-  additional <code class="computeroutput">get()</code> is necessary because the return type of
-  <code class="computeroutput">extract()</code> is a <code class="computeroutput">boost::optional</code>).</p>
+}
+</pre>
+<p>The output is:</p>
+<pre class="programlisting">1 I one
+2 II two
+3 III three
+4 IV four
+</pre>
 </div>
 <table xmlns:rev="http://www.cs.rpi.edu/~gregod/boost/tools/doc/revision" width="100%"><tr>
 <td align="left"></td>

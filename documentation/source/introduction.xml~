@@ -17,4 +17,9 @@
   to the use of built-in indicators. Please contact me
   (a.hagen-zanker@surrey.ac.uk) if you are interested in using this for your
   work or research.</para>
+
+  <para><emphasis>Note:</emphasis> This is not a Boost library or intended to
+  become one, I am just trying to use the tools recommended on the <ulink
+  url="http://http://rrsd.com/blincubator.com/">Boost Library
+  Incubator</ulink>.</para>
 </section>

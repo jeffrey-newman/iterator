@@ -9,11 +9,8 @@
   <section>
     <title>Description</title>
 
-    <para>A zip_range is used to iterate over a number of ranges in step. This
-    is not a full-fledged implementation and only allows for forward
-    iteration, which is sufficient for the moving_window library. Zip_nange is
-    essential to this library because the moving_window_views are
-    ranges.</para>
+    <para>A zip_range is used to iterate over a number of ranges in
+    step.</para>
   </section>
 
   <section>
@@ -25,8 +22,8 @@
 
     <programlisting>std::vector&lt;int&gt; a = {1,2,3,4,5};
 std::vector&lt;int&gt; b = {100, 200, 300, 400, 500};
-auto zip_range = make_zip_range(std::ref(a), std::ref(b));
-for(auto&amp; i : zip_range)
+auto zip_range = blink::iterator::make_zip_range(std::ref(a), std::ref(b));
+for(auto&amp;&amp; i : zip_range)
 {
   std::cout &lt;&lt; std::get&lt;0&gt;(i) + std::get&lt;1&gt;(i) &lt;&lt; std::endl;
 }</programlisting>

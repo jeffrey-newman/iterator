@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE library PUBLIC "-//XMLmind//DTD BoostBook V1.1//EN"
+"http://www.boost.org/tools/boostbook/dtd/boostbook.dtd">
+ <section>
+    <title>Installation</title>
+
+    <para>The Raster library is header only, but depends on BOOST
+    (<ulink url="http://www.boost.org">www.boost.org</ulink>) and GDAL (<ulink
+    url="http://www.gdal.org">www.gdal.org</ulink>) that does require building
+    and installation; follow the instructions on the BOOST web pages.
+	The version of BOOST that is used is 1.57.</para>
+
+    <para>The library makes use of C++11 language and standard library
+    features. These are not yet universally supported. The suggested platform
+    is Microsoft Visual Studio 2013.</para>
+  </section>
