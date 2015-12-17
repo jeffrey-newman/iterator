@@ -21,6 +21,8 @@
 #define BLINK_ITERATOR_ZIP_ITERATOR_H_AHZ
 
 #include <blink\iterator\detail.h>
+#include <blink\utility\index_sequence.h>
+
 #include <boost\iterator\iterator_facade.hpp>
 
 #include <tuple>
@@ -48,6 +50,7 @@ namespace blink {
 
 
     public:
+      using reference = std::tuple<get_type<get_reference<get_type< std::remove_reference<Iterators> > > >...>;
       zip_iterator(const zip_iterator& it) : m_iterators(it.m_iterators)
       { }
 
