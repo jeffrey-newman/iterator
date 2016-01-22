@@ -23,48 +23,64 @@ namespace blink {
   namespace iterator {
 
     //Iterate over a range of ranges
-    // TODO: this is not being used at teh moment, but should come in handy for 
-    // distance weighted moving windows.
 
     template<typename RangeRange>
     struct range_range_iterator
     {
-
       using range = typename RangeRange::value_type;
-      using value_type = typename range::value_type;
       using range_iterator = typename range::iterator;
       using range_reference = typename range_iterator::reference;
-
       using iterators = std::vector < range_iterator > ;
-      struct reference_proxy
+
+      struct reference_level_2
       {
-        void operator=(const value_type& v) const
+        struct iterator
         {
-          **m_iter = v;
+          iterator(const typename iterators::iterator& iter) : m_iter(iter)
+          using reference = range_reference;
+          reference operator*() const
+          {
+            **m_iter;
+          }
+
+          iterator& operator++()
+          {
+            ++m_iter;
+            return *this;
+          }
+          bool operator==(const iterator& that)
+          {
+            return m_iter == that.m_iter;
+          }
+
+          bool operator!=(const iterator& that)
+          {
+            return m_iter != that.m_iter;
+          }
+          typename iterators::iterator m_iter;
+        };
+
+        iterator begin() const
+        {
+          return m_begin;
+        }
+        iterator end() const
+        {
+          return m_end;
         }
 
-        void operator=(const reference_proxy& that) const
+        typename range_reference operator[](int i)
         {
-          **m_iter = static_cast<value_type>(**that.m_iter);
+          return **(m_begin + i);
         }
 
-
-        // conversion to make the iterator readable
-        operator value_type() const
-        {
-          return **m_iter;;
-        }
-
-        reference_proxy(const range_iterator* iter) :m_iter(iter)
-        {}
-
-        const range_iterator* m_iter;
+        typename iterators::const_iterator m_begin;
+        typename iterators::const_iterator m_end;
       };
+      using value_type = reference_level_2;
+      using reference = reference_level_2;
 
-      using reference = std::vector < reference_proxy > ;
-
-
-      void find_begin(RangeRange& ranges)
+      void find_begin(RangeRange& ranges) 
       {
         m_iterators.clear();
         for (auto& range : ranges)
@@ -82,20 +98,12 @@ namespace blink {
         }
       }
 
-
-      range_reference get(int i)
+      reference_level_2 operator*() const
       {
-        return *(m_iterators[i]);
-
-      }
-      reference operator*()
-      {
-        reference result;
-        for (int i = 0; i < m_iterators.size(); ++i)
-        {
-          result.push_back(reference_proxy(&m_iterators[i]));
-        }
-        return result;
+        reference_level_2 r;
+        r.m_begin = m_iterators.begin();
+        r.m_end = m_iterators.end();
+        return r;
       }
 
       range_range_iterator& operator++()
@@ -118,7 +126,6 @@ namespace blink {
       }
 
       iterators m_iterators;
-
     };
 
     template<typename RangeRange>
@@ -129,26 +136,24 @@ namespace blink {
 
       using iterator = range_range_iterator < RangeRange > ;
 
-      iterator begin()
+      iterator begin() const
       {
         iterator i;
         i.find_begin(m_range_range);
         return i;
       }
 
-      iterator end()
+      iterator end() const
       {
         iterator i;
         i.find_end(m_range_range);
         return i;
       }
-
       RangeRange& m_range_range;
-
     };
 
     template<typename RangeRange>
-    range_zip_range<RangeRange> make_range_zip_range(RangeRange& rr)
+    range_zip_range<RangeRange> make_range_range(RangeRange& rr)
     {
       return range_zip_range<RangeRange>(rr);
     }
