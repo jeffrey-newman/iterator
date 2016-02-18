@@ -1,5 +1,5 @@
 #include <blink\iterator\zip_range.h>
-
+#include <blink\iterator\transform_range.h>
 #include <boost\iterator\iterator_facade.hpp>
 
 #include <string>
@@ -78,7 +78,13 @@ int main()
 {
   std::vector<int> a = { 1, 2, 3, 4, 5, 6 };
   std::vector<int> b = { 100, 200, 300, 400, 500, 600 };
- 
+  auto plusser = std::plus<int>();
+  auto sum = make_transform_range<int>(plusser, std::ref(a), std::ref(b) );
+  for (auto&& i : sum)
+  {
+    std::cout << i << std::endl;
+  }
+  return 0;
   using iter =  std::vector<int>::iterator;
   using zip_iter = zip_iterator<iter, iter>;
 
