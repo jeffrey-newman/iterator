@@ -153,7 +153,7 @@ namespace blink {
     };
 
     template<typename RangeRange>
-    range_zip_range<RangeRange> make_range_range(RangeRange& rr)
+    range_zip_range<RangeRange> make_range_zip_range(RangeRange& rr)
     {
       return range_zip_range<RangeRange>(rr);
     }
