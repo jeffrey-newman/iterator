@@ -34,7 +34,7 @@ namespace blink {
       using selected_range = get_type < std::tuple_element<I, ranges_tuple> >;
 
     public:
-
+      using value_type = Value;
       // use get_iterator instead of ::iterator to overcome Visual Studio bug
       using iterator = transform_iterator < 
         Function,

@@ -42,7 +42,7 @@ namespace blink {
     public:
       using reference = Value;
 
-      transform_iterator(const transform_iterator& it) : m_iterators(it.m_iterators)
+      transform_iterator(const transform_iterator& it) : m_iterators(it.m_iterators), m_f(it.m_f)
       { }
 
       template<class... InIterators>
