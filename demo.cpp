@@ -76,15 +76,23 @@ struct uncopyable_range
 
 using namespace blink::iterator;
 
+int my_plus(int a, int b)
+{
+  return a + b;
+}
 int main()
 {
   std::vector<int> a = { 1, 2, 3, 4, 5, 6 };
   std::vector<int> b = { 100, 200, 300, 400, 500, 600 };
-  
-  auto sum = make_transform_range(plus{}, std::ref(a), std::ref(b));
-  auto sum1 = range_algebra(a) / range_algebra(b);
-  auto sum2 = (1000 + -range_algebra(a) );
+  auto fun = [](int a, int b) {return 10 * a + b; };
+  auto ra = range_algebra(a);
+  auto rb = range_algebra(b);
 
+  auto sum = make_transform_range(my_plus, ra, rb);        // function
+  auto sum1 = make_transform_range(fun, ra, rb);           // lamda
+  auto sum2 = make_transform_range(std::plus<>{}, ra, rb); // function object
+  auto sum3 = (ra + rb) / (ra - rb) == (ra *rb) || (ra != rb) ;                      // operator
+  
   for (auto&& i : sum)
   {
     std::cout << i << std::endl;
@@ -99,7 +107,11 @@ int main()
   {
     std::cout << i << std::endl;
   }
-  
+  for (auto&& i : sum3)
+  {
+    std::cout << i << std::endl;
+  }
+
   std::cin.get();
   return 0;
   using iter =  std::vector<int>::iterator;

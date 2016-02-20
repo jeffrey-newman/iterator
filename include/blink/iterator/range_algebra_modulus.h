@@ -106,7 +106,7 @@ namespace blink
     }
 
     template<class R1, class R2>
-    range_algebra_wrapper<typename modulus_helper<range_algebra_wrapper<R2>, 
+    range_algebra_wrapper<typename modulus_helper<range_algebra_wrapper<R1>, 
       range_algebra_wrapper<R2>>::range>
       operator%(const range_algebra_wrapper<R1>& r1, 
       const range_algebra_wrapper<R2>& r2)
