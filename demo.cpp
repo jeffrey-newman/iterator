@@ -81,9 +81,9 @@ int main()
   std::vector<int> a = { 1, 2, 3, 4, 5, 6 };
   std::vector<int> b = { 100, 200, 300, 400, 500, 600 };
   
-  auto sum = make_transform_range<int>(std::plus<int>(), std::ref(a), std::ref(b));
-  auto sum1 = range_algebra(a) + range_algebra(b);
-  auto sum2 = 1000 + range_algebra(a) + 2000000 + 40000000;
+  auto sum = make_transform_range(plus{}, std::ref(a), std::ref(b));
+  auto sum1 = range_algebra(a) / range_algebra(b);
+  auto sum2 = (1000 + -range_algebra(a) );
 
   for (auto&& i : sum)
   {

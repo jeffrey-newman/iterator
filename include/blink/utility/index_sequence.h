@@ -7,8 +7,7 @@
 // Distributed under the MIT Licence (http://opensource.org/licenses/MIT)
 //=======================================================================
 //
-// Implements a zip range, it is not a fully functional generic zip range, 
-// but supports the forward-only iteration necessary in the project
+// index_sequence is now parrt of C++14
 
 #ifndef BLINK_UTILITY_INDEX_SEQUENCE_H_AHZ
 #define BLINK_UTILITY_INDEX_SEQUENCE_H_AHZ

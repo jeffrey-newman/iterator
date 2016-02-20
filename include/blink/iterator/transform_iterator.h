@@ -25,6 +25,14 @@
 namespace blink {
   namespace iterator {
 
+    template<class Function, class... Ranges> struct transform_helper
+    {
+ //     using value_type = decltype(std::declval<Function>()(typename std::declval<get_value_type<
+  //      unwrap_unref<get_type<std::remove_reference<Ranges> > > >::type>()...));
+           using value_type = decltype(std::declval<Function>()(typename std::declval<get_value_type<
+            unwrap_unref<get_type<std::remove_reference<Ranges> > > >::type>()...));
+    };
+
     template < class Function, class Value, class... Iterators >
     class transform_iterator : public 
       boost::iterator_facade < transform_iterator<Function, Value, Iterators...>,
@@ -47,9 +55,7 @@ namespace blink {
 
       template<class... InIterators>
       explicit transform_iterator(Function f, InIterators&&... its) 
-        :
-        m_f(f),
-        m_iterators(std::forward<InIterators>(its)...)
+        : m_f(f), m_iterators(std::forward<InIterators>(its)...)
       { }
 
       transform_iterator& operator=(const transform_iterator& it)
