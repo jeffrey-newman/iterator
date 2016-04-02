@@ -27,10 +27,9 @@ namespace blink {
 
     template<class Function, class... Ranges> struct transform_helper
     {
- //     using value_type = decltype(std::declval<Function>()(typename std::declval<get_value_type<
-  //      unwrap_unref<get_type<std::remove_reference<Ranges> > > >::type>()...));
-           using value_type = decltype(std::declval<Function>()(typename std::declval<get_value_type<
-            unwrap_unref<get_type<std::remove_reference<Ranges> > > >::type>()...));
+      //TODO: should use range_traits for value_type instead?
+      using value_type = decltype(std::declval<Function>()(typename std::declval<
+      remove_reference_t<special_decay_t<Ranges> > ::value_type>()...));
     };
 
     template < class Function, class Value, class... Iterators >
@@ -44,7 +43,7 @@ namespace blink {
       using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<iterators>::value > ;
 
       template<std::size_t I>
-      using selected_iterator = get_type < std::tuple_element<I, iterators> > ;
+      using selected_iterator = tuple_element_t<I, iterators>;
 
 
     public:
@@ -111,8 +110,8 @@ namespace blink {
       template<class... OtherIterators >
       std::ptrdiff_t distance_to(const zip_iterator<OtherIterators...>& that) const
       {
-        static_assert(std::is_same < pack< get_type<std::decay<OtherIterators> >...>
-          , pack< get_type < std::decay <Iterators> >... > > ::value, "incompatible iterators");
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
 
         return std::distance(std::get<0>(m_iterators), that.get<0>());
       }
@@ -120,8 +119,8 @@ namespace blink {
       template<class... OtherIterators >
       bool equal(const transform_iterator<Function, Value, OtherIterators...>& that) const
       {
-        static_assert(std::is_same < pack< get_type<std::decay<OtherIterators> >...>
-          , pack< get_type < std::decay <Iterators> >... > > ::value, "incompatible iterators");
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
 
         return std::get<0>(m_iterators) == that.get<0>();
       }
@@ -167,13 +166,13 @@ namespace blink {
     transform_iterator < 
       Function,
       get_value_type2<Function, Iterators...>,
-      unwrap < get_type < std::remove_reference < Iterators> > >... >  
+      special_decay_t< Iterators>... >
       make_transform_iterator(Function fn, Iterators&&... its)
     {
       return transform_iterator <
         Function,
-        get_value_type<Function, Iterators...>,
-        unwrap < get_type < std::remove_reference < Iterators> > >... >(fn, std::forward<Iterators>(its)...);
+        get_value_type2<Function, Iterators...>,
+        special_decay_t< Iterators>... >(fn, std::forward<Iterators>(its)...);
     }
   }
 }

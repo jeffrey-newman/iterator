@@ -31,16 +31,16 @@ namespace blink {
       using ranges_tuple = std::tuple <Ranges...>;
       using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<ranges_tuple>::value >;
       template<std::size_t I>
-      using selected_range = get_type < std::tuple_element<I, ranges_tuple> >;
+      using selected_range = tuple_element_t<I, ranges_tuple>;
 
     public:
       //using value_type = Value;
       using value_type = typename transform_helper<Function, Ranges...>::value_type;
-      // use get_iterator instead of ::iterator to overcome Visual Studio bug
+      // use get_iterator_t instead of ::iterator to overcome Visual Studio bug
       using iterator = transform_iterator < 
         Function,
         value_type,
-        get_type < get_iterator<get_type<std::remove_reference<Ranges> > > >... > ;
+        get_iterator_t<remove_reference_t<Ranges> >... > ;
 
       template<class... InRanges>
       explicit transform_range(Function f, InRanges&&... ranges) 
@@ -85,18 +85,11 @@ namespace blink {
     };
 
     template<class Function, class...Ranges>
-    transform_range<
-      Function,
-     // typename transform_helper<Function, Ranges...>::value_type,
-      unwrap<get_type<std::remove_reference<Ranges> > >...> make_transform_range
-        (Function f, Ranges&&... rgs)
+    transform_range<Function, special_decay_t<Ranges>...>
+      make_transform_range (Function f, Ranges&&... rgs)
     {
-        return transform_range<
-          Function,
-//          Value,
-         // typename transform_helper<Function, Ranges...>::value_type,
-          unwrap<get_type<std::remove_reference<Ranges> > >...>(
-            f, std::forward<Ranges>(rgs)...);
+      using return_type = transform_range < Function, special_decay_t<Ranges>... >;
+      return return_type(f, std::forward<Ranges>(rgs)...);
     }
   }
 }

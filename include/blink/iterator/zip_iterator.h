@@ -35,22 +35,22 @@ namespace blink {
     template < class... Iterators >
     class zip_iterator : public  //detail::zip_iterator_helper < Iterators... >::facade
       boost::iterator_facade < zip_iterator<Iterators...>,
-      std::tuple<get_type<get_value_type<get_type < std::remove_reference<Iterators> > > >...>,
+      std::tuple<get_value_type_t<remove_reference_t<Iterators> >...>,
       boost::random_access_traversal_tag,
-      std::tuple<get_type<get_reference<get_type< std::remove_reference<Iterators> > > >...> >
+      std::tuple<get_reference_t<remove_reference_t<Iterators> >...> >
     {
-      // get_reference instead of ::reference is workaround for a Visual Studio bug
+      // get_reference_t instead of ::reference is workaround for a Visual Studio bug
       // http://stackoverflow.com/questions/23347287/parameter-pack-expansion-fails
 
       using iterators = std::tuple < Iterators... > ;
       using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<iterators>::value > ;
 
       template<std::size_t I>
-      using selected_iterator = get_type < std::tuple_element<I, iterators> > ;
+      using selected_iterator = tuple_element_t<I, iterators> ;
 
 
     public:
-      using reference = std::tuple<get_type<get_reference<get_type< std::remove_reference<Iterators> > > >...>;
+      using reference = std::tuple<get_reference_t<remove_reference_t<Iterators> >...>;
       zip_iterator(const zip_iterator& it) : m_iterators(it.m_iterators)
       { }
 
@@ -109,8 +109,8 @@ namespace blink {
       template<class... OtherIterators >
       std::ptrdiff_t distance_to(const zip_iterator<OtherIterators...>& that) const
       {
-        static_assert(std::is_same < pack< get_type<std::decay<OtherIterators> >...>
-          , pack< get_type < std::decay <Iterators> >... > > ::value, "incompatible iterators");
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple<decay_t<Iterators>... > > ::value, "incompatible iterators");
 
         return std::distance(std::get<0>(m_iterators), that.get<0>());
       }
@@ -118,8 +118,8 @@ namespace blink {
       template<class... OtherIterators >
       bool equal(const zip_iterator<OtherIterators...>& that) const
       {
-        static_assert(std::is_same < pack< get_type<std::decay<OtherIterators> >...>
-          , pack< get_type < std::decay <Iterators> >... > > ::value, "incompatible iterators");
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple < decay_t <Iterators>... > > ::value, "incompatible iterators");
 
         return std::get<0>(m_iterators) == that.get<0>();
       }
@@ -155,10 +155,10 @@ namespace blink {
     };
 
     template<class...Iterators>  
-    zip_iterator < unwrap < get_type < std::remove_reference < Iterators> > >... >  
+    zip_iterator < special_decay_t < Iterators>... >  
       make_zip_iterator(Iterators&&... its)
     {
-      return zip_iterator < unwrap < get_type < std::remove_reference < Iterators> > >... >(std::forward<Iterators>(its)...);
+      return zip_iterator < special_decay_t < Iterators>... >(std::forward<Iterators>(its)...);
     }
   }
 }

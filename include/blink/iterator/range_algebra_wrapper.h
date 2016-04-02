@@ -52,6 +52,19 @@ namespace blink
     {
       return range_algebra_wrapper<Range&>(r);
     }
+
+    template<class T>
+    struct is_range_algebra_wrapped
+    {
+      const static bool value = false;
+    };
+
+    template<class T>
+    struct is_range_algebra_wrapped<range_algebra_wrapper<T> >
+    {
+      const static bool value = true;
+    };
+
   }
 }
 
