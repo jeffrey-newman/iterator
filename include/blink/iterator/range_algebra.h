@@ -29,6 +29,7 @@
 #include <blink/iterator/range_algebra_equal_to.h>
 #include <blink/iterator/range_algebra_not_equal_to.h>
 #include <blink/iterator/range_algebra_negate.h>
+#include <blink/iterator/range_algebra_transform.h>
 // negate
 // logical_not
 // bitwise

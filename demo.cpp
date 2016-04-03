@@ -1,7 +1,10 @@
 #include <blink\iterator\zip_range.h>
 #include <blink\iterator\transform_range.h>
 #include <blink\iterator\range_algebra.h>
-
+#include <blink\iterator\range_algebra_transform.h>
+#include <blink\utility\filter_index_sequence.h>
+#include <blink\utility\tuple_elements.h>
+#include <blink\utility\index_in_filter_transform.h>
 #include <boost\iterator\iterator_facade.hpp>
 
 #include <string>
@@ -80,9 +83,68 @@ int my_plus(int a, int b)
 {
   return a + b;
 }
+
+
+template<class T>
+struct is_int
+{
+  static const bool value = false;
+};
+
+template<>
+struct is_int<int>
+{
+  static const bool value = true;
+};
+
+template<class T>  struct print_index_sequence
+{};
+
+template<class... Args>
+void ignore(Args...)
+{
+
+}
+
+template<std::size_t...S>
+struct print_index_sequence < blink::utility::index_sequence < S... > >
+{
+  int print_i(std::size_t i)
+  {
+    std::cout << i << std::endl;
+    return 1;
+  }
+  void print()
+  {
+    return ignore(print_i(S)...);
+  }
+};
+
+
 int main()
 {
   std::vector<int> a = { 1, 2, 3, 4, 5, 6 };
+
+  using Tuple = std::tuple < int, int, float, float, double, double > ;
+  Tuple ax{ 1, 2, 3, 4, 5, 6 };
+  using is = blink::utility::index_sequence < 0, 2 > ;
+  auto s = blink::utility::tuple_elements < std::tuple<int, float, double>, is> {};
+  auto select = blink::utility::get_elements<Tuple, is >(ax, is{});
+  auto rat = make_range_algebra_transform(std::plus < > {}, range_algebra(a), range_algebra(a));
+  auto ii = 5;
+
+  for (auto&& i : rat)
+  {
+    std::cout << i << std::endl;
+  }
+ 
+  using seq = blink::utility::make_index_sequence <10>;
+  using seq2 = blink::utility::make_index_in_filter < is_int, int, bool, double, int, float >;
+  using printer = print_index_sequence < seq2 > ;
+  //printer p;
+  seq2 p;
+ // return 0;
+//  std::vector<int> a = { 1, 2, 3, 4, 5, 6 };
   std::vector<int> b = { 100, 200, 300, 400, 500, 600 };
   auto fun = [](int a, int b) {return 10 * a + b; };
   auto ra = range_algebra(a);
@@ -91,7 +153,7 @@ int main()
   auto sum = make_transform_range(my_plus, ra, rb);        // function
   auto sum1 = make_transform_range(fun, ra, rb);           // lamda
   auto sum2 = make_transform_range(std::plus<>{}, ra, rb); // function object
-  auto sum3 = (ra + rb) / (ra - rb) == (ra *rb) || (ra != rb) ;                      // operator
+  auto sum3 = ra + rb ;                                  // operator
   
   for (auto&& i : sum)
   {

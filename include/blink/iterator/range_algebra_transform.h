@@ -55,7 +55,7 @@ namespace blink {
       
       using all_tuple = std::tuple < Args... > ;
       using range_tuple = blink::utility::tuple_elements_t< apply_to_pack_t< decay_t, all_tuple>, variable_indices >; // tuple of ranges
-      using value_tuple = apply_to_pack_t< get_value_type_t, apply_to_pack_t< decay_t, range_tuple> >; 
+      using value_tuple = apply_to_pack_t< get_reference_t, apply_to_pack_t< decay_t, range_tuple> >; 
       using constants_tuple = blink::utility::tuple_elements_t< all_tuple, constant_indices >; // tuple of ranges
      
       using range_reference_tuple = apply_to_pack_t < add_lvalue_reference_t, range_tuple >;
@@ -154,15 +154,26 @@ namespace blink {
 
     };
 
-    template<class Function, class...Iterators>
-    range_algebra_transform <special_decay_t<Function>, special_decay_t<Iterators>...>
-      make_range_algebra_transform(Function&& f, Iterators&&... i)
+    template<class Function, class...Args>
+    range_algebra_transform <special_decay_t<Function>, special_decay_t<Args>...>
+      make_range_algebra_transform(Function&& f, Args&&... a)
     { 
       using type =
-        range_algebra_transform < special_decay_t<Function>, special_decay_t<Iterators>... > ;
+        range_algebra_transform < special_decay_t<Function>, special_decay_t<Args>... >;
 
-        return type(std::forward<Function>(f), std::forward<Iterators>(i)...);
+      return type(std::forward<Function>(f), std::forward<Args>(a)...);
     }
+    /*
+    template<class Function, class...Args>
+    range_algebra_wrapper <range_algebra_transform <special_decay_t<Function>, special_decay_t<Args>...> >
+      range_algebra_function(Function&& f, Args&&... a)
+    {
+      using type =
+        range_algebra_transform < special_decay_t<Function>, special_decay_t<Args>... >;
+
+      return range_algebra_val(type(std::forward<Function>(f), std::forward<Args>(a)...));
+    }
+    */
   }
 }
 

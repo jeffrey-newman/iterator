@@ -27,8 +27,9 @@ namespace blink
       {}
       using range_type = typename std::remove_reference<Range>::type;
       using value_type = typename range_type::iterator::value_type;
+      using reference = typename range_type::iterator::reference;
       using iterator = typename range_type::iterator;
-
+     
       iterator begin() // Make this const correct
       {
         return m_range.begin();
