@@ -23,7 +23,23 @@ namespace blink
     class range_algebra_wrapper
     {
     public:
-      range_algebra_wrapper(Range& r) : m_range(r)
+      range_algebra_wrapper(const range_algebra_wrapper& that) : m_range(that.m_range)
+      {}
+
+      range_algebra_wrapper(range_algebra_wrapper&& that) : m_range(std::move(that.m_range))
+      {}
+
+      range_algebra_wrapper& operator=(const range_algebra_wrapper& that)
+      {
+        m_range = that.m_range;
+      }
+
+      range_algebra_wrapper& operator=(range_algebra_wrapper&& that)
+      {
+        m_range = std::move(that.m_range);
+      }
+
+      range_algebra_wrapper(Range&& r) : m_range(std::forward<Range>(r))
       {}
       using range_type = typename std::remove_reference<Range>::type;
       using value_type = typename range_type::iterator::value_type;
@@ -39,19 +55,24 @@ namespace blink
       {
         return m_range.end();
       }
+      Range& get()
+      {
+        return m_range;
+      }
+
       Range m_range;
     };
 
     template<typename Range>
-    range_algebra_wrapper<Range> range_algebra_val(Range& r) // makes a copy
+    range_algebra_wrapper<special_decay_t<Range> > range_algebra_val(Range&& r) // makes a copy
     {
-      return range_algebra_wrapper<Range>(r);
+      return range_algebra_wrapper<special_decay_t<Range> >(std::forward<Range>(r));
     }
 
     template<typename Range>
     range_algebra_wrapper<Range&> range_algebra(Range& r) // takes a ref
     {
-      return range_algebra_wrapper<Range&>(r);
+      return range_algebra_val(std::ref(r));
     }
 
     template<class T>

@@ -105,9 +105,29 @@ namespace blink {
       using transform_range_helper_t = transform_range_helper < range_tuple >;
       using transform_range = typename transform_range_helper_t::type;
       using iterator = get_iterator_t < transform_range > ;
-      
+     
+      range_algebra_transform(const range_algebra_transform& that) 
+        : m_f(that.m_f)
+        , m_arguments(that.m_arguments)
+        , m_ranges(blink::utility::refer_elements(m_arguments, variable_indices{}))
+        , m_constant_arguments(blink::utility::refer_elements(m_arguments, constant_indices{}))
+        , m_applicator(this)
+        , m_transform_range(m_applicator, m_ranges)
+      {
+        assert(false);
+      }
+
+      range_algebra_transform(range_algebra_transform&& that)
+        : m_f(std::move(that.m_f) )
+        , m_arguments(std::move(that.m_arguments))
+        , m_ranges(blink::utility::refer_elements(m_arguments, variable_indices{}))
+        , m_constant_arguments(blink::utility::refer_elements(m_arguments, constant_indices{}))
+        , m_applicator(this)
+        , m_transform_range(m_applicator, m_ranges)
+      {}
+
       template<class InFunction, class... InArgs>
-      explicit range_algebra_transform(InFunction&& f, InArgs&&... args) 
+      range_algebra_transform(InFunction&& f, InArgs&&... args) 
         : m_f(std::forward<InFunction>(f))
         , m_arguments(std::forward<InArgs>(args)...)
         , m_ranges(blink::utility::refer_elements(m_arguments, variable_indices{}))
@@ -163,17 +183,18 @@ namespace blink {
 
       return type(std::forward<Function>(f), std::forward<Args>(a)...);
     }
-    /*
+   
     template<class Function, class...Args>
-    range_algebra_wrapper <range_algebra_transform <special_decay_t<Function>, special_decay_t<Args>...> >
+    range_algebra_wrapper <
+      range_algebra_transform <special_decay_t<Function>, special_decay_t<Args>...> >
       range_algebra_function(Function&& f, Args&&... a)
     {
       using type =
         range_algebra_transform < special_decay_t<Function>, special_decay_t<Args>... >;
-
-      return range_algebra_val(type(std::forward<Function>(f), std::forward<Args>(a)...));
+      type rat(std::forward<Function>(f), std::forward<Args>(a)...);
+      return range_algebra_val(std::move(rat));
     }
-    */
+    
   }
 }
 
