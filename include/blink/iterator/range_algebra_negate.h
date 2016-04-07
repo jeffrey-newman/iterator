@@ -18,32 +18,23 @@
 namespace blink
 {
   namespace iterator {
-    struct negate
-    {
-      template<class T>
-      auto operator()(T&& v) const->decltype(-std::forward<T>(v) )
-      {
-        return -v;
-      }
-    };
-
 
     template<class R>
-    struct negate_helper
+    range_algebra_wrapper<
+      transform_range<std::logical_not<>, range_algebra_wrapper<R>& > >
+      operator-(range_algebra_wrapper<R>& r)
     {
-      using r = typename std::remove_reference<R>::type;
-      using v = typename r::value_type;
-      using result_type = decltype(-std::declval<v>() );
-      using range = transform_range <negate, r> ;
-    };
+        return range_algebra(make_transform_range(std::negate<>{},
+          std::ref(r)));
+    }
 
     template<class R>
-    range_algebra_wrapper<typename negate_helper<
-      range_algebra_wrapper<R> >::range>
-      operator-(const range_algebra_wrapper<R>& r)
+    range_algebra_wrapper<
+      transform_range<std::logical_not<>, range_algebra_wrapper<R> > >
+      operator-(range_algebra_wrapper<R>&& r)
     {
-      return range_algebra_val(negate_helper<range_algebra_wrapper<R> >
-        ::range(negate{}, r));
+        return range_algebra(make_transform_range(std::negate<>{},
+          std::move(r)));
     }
   }
 }

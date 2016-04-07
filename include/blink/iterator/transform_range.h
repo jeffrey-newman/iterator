@@ -42,6 +42,20 @@ namespace blink {
         value_type,
         get_iterator_t<remove_reference_t<Ranges> >... > ;
 
+      // Perhaps this should be deleted?
+      transform_range(const transform_range& that)
+        : m_ranges(that.m_ranges)
+        , m_f(that.m_f)
+      {
+      }
+      
+      transform_range(transform_range&& that)
+        : m_ranges(std::move(that.m_ranges))
+        , m_f(std::move(that.m_f))
+
+      {
+
+      }
       template<class... InRanges>
       explicit transform_range(Function f, InRanges&&... ranges) 
         : 

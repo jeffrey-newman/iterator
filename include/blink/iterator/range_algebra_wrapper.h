@@ -29,50 +29,138 @@ namespace blink
       range_algebra_wrapper(range_algebra_wrapper&& that) : m_range(std::move(that.m_range))
       {}
 
-      range_algebra_wrapper& operator=(const range_algebra_wrapper& that)
+      template<class SomeConstant>
+      range_algebra_wrapper& operator=(const SomeConstant& c)
       {
-        m_range = that.m_range;
+        auto j = begin();
+        auto j_end = end();
+        for (; j != j_end; ++j)
+        {
+          *j = c;
+        }
+        return *this;
       }
 
-      range_algebra_wrapper& operator=(range_algebra_wrapper&& that)
+      template<class SomeRange>
+      range_algebra_wrapper& operator=(const range_algebra_wrapper<SomeRange>& r)
       {
-        m_range = std::move(that.m_range);
+        range_algebra_wrapper<SomeRange>& rnc = const_cast<range_algebra_wrapper<SomeRange>&>(r);
+        auto i = rnc.begin();
+        auto j = begin();
+        auto j_end = end();
+        for (; j != j_end; ++i, ++j)
+        {
+          *j = *i;
+        }
+        return *this;
+      }
+     
+       range_algebra_wrapper& operator++()
+      {
+        auto j = begin();
+        auto j_end = end();
+        for (; j != j_end; ++j)
+        {
+          ++(*j);
+        }
+        return *this;
       }
 
-      range_algebra_wrapper(Range&& r) : m_range(std::forward<Range>(r))
+       range_algebra_wrapper& operator--()
+      {
+        auto i = r.begin();
+        auto j = begin();
+        auto j_end = end();
+        for (; j != j_end; ++i, ++j)
+        {
+          --(*j);
+        }
+        return *this;
+      }
+      template<class T>
+      range_algebra_wrapper& operator+=(T&& r)
+      {
+        *this = (*this + std::forward<T>(r));
+        return *this;
+      }
+
+      template<class T>
+      range_algebra_wrapper& operator-=(T&& r)
+      {
+        *this = (*this - std::forward<T>(r));
+        return *this;
+      }
+
+      template<class T>
+      range_algebra_wrapper& operator*=(T&& r)
+      {
+        *this = (*this * std::forward<T>(r));
+        return *this;
+      }
+
+      template<class T>
+      range_algebra_wrapper& operator/=(T&& r)
+      {
+        *this = (*this / std::forward<T>(r));
+        return *this;
+      }
+
+     // template<class SomeRange> range_algebra_wrapper& operator&=(SomeRange& r)
+     // template<class SomeRange> range_algebra_wrapper& operator|=(SomeRange& r)
+     // range_algebra_wrapper& operator<<=(SomeRange& r)
+     // range_algebra_wrapper& operator>>=(SomeRange& r)
+      
+      //range_algebra_wrapper& operator=(const range_algebra_wrapper& that)
+      //{
+      //  m_range = that.m_range;
+      //}
+
+      //range_algebra_wrapper& operator=(range_algebra_wrapper&& that)
+      //{
+      //  m_range = std::move(that.m_range);
+      //}
+
+      template<typename InRange, typename X =
+        detail::disable_if_same_or_derived<range_algebra_wrapper, InRange >>
+
+        range_algebra_wrapper(InRange&& r) : m_range(std::forward<InRange>(r))
       {}
+
       using range_type = typename std::remove_reference<Range>::type;
       using value_type = typename range_type::iterator::value_type;
       using reference = typename range_type::iterator::reference;
       using iterator = typename range_type::iterator;
      
-      iterator begin() // Make this const correct
+      iterator begin() 
       {
         return m_range.begin();
       }
 
-      iterator end()
+      iterator end() 
       {
         return m_range.end();
       }
-      Range& get()
+      const Range& get() const
       {
         return m_range;
       }
-
+      Range& get() 
+      {
+        return m_range;
+      }
       Range m_range;
     };
 
     template<typename Range>
-    range_algebra_wrapper<special_decay_t<Range> > range_algebra_val(Range&& r) // makes a copy
+    range_algebra_wrapper<special_decay_t<Range> > range_algebra(Range&& r) 
     {
       return range_algebra_wrapper<special_decay_t<Range> >(std::forward<Range>(r));
     }
 
     template<typename Range>
-    range_algebra_wrapper<Range&> range_algebra(Range& r) // takes a ref
+    range_algebra_wrapper<Range&> range_algebra_ref(Range& r) // takes a ref
     {
-      return range_algebra_val(std::ref(r));
+      return range_algebra(std::ref(r));
     }
 
     template<class T>

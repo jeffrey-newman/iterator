@@ -74,7 +74,18 @@ namespace blink {
       template<template<class...> class F, class Pack>
       using apply_to_pack_t = typename apply_to_pack < F, Pack >::type;
 
+      //http://ericniebler.com/2013/08/07/universal-references-and-the-copy-constructo/
+      // write this once and put it somewhere you can
+      // reuse it
+      template<typename A, typename B>
+      using disable_if_same_or_derived =
+        typename std::enable_if<
+        !std::is_base_of<A, typename
+        std::remove_reference<B>::type
+        >::value
+        >::type;
 
+      
     }
     using detail::do_nothing;
     using detail::special_decay_t;

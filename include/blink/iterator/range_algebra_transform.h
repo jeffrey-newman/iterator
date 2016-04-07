@@ -8,8 +8,13 @@
 // Distributed under the MIT Licence (http://opensource.org/licenses/MIT)
 //=======================================================================
 //
-// range_algebra allows element-by-element operations on ranges
-// So far only implemented for plus
+// range_algebra_transform allows element-by-element function on combinations
+// of ranges and scalars. 
+// It works now, but it way more complicated than necessary. Instead of unpicking 
+// the input arguments into ranges and values I should have converted the values 
+// to a range that always return the same value. Then it can be used with 
+// transform_range easily
+
 
 #ifndef BLINK_ITERATOR_RANGE_ALGEBRA_TRANSFORM_H_AHZ
 #define BLINK_ITERATOR_RANGE_ALGEBRA_TRANSFORM_H_AHZ
@@ -85,7 +90,7 @@ namespace blink {
       template<class... Ranges>
       struct transform_range_helper<std::tuple<Ranges...>>
       {
-        using type = transform_range < applicator, remove_reference_t<Ranges>... > ;
+        using type = transform_range < applicator, Ranges... > ;
         static const std::size_t nRanges = sizeof...(Ranges);
         using range_indices = blink::utility::make_index_sequence < nRanges >;
         
@@ -102,7 +107,7 @@ namespace blink {
 
       };
 
-      using transform_range_helper_t = transform_range_helper < range_tuple >;
+      using transform_range_helper_t = transform_range_helper < range_reference_tuple >;
       using transform_range = typename transform_range_helper_t::type;
       using iterator = get_iterator_t < transform_range > ;
      
@@ -114,7 +119,8 @@ namespace blink {
         , m_applicator(this)
         , m_transform_range(m_applicator, m_ranges)
       {
-        assert(false);
+        std::cout << "copied" << std::endl;
+//        assert(false);
       }
 
       range_algebra_transform(range_algebra_transform&& that)
@@ -124,7 +130,9 @@ namespace blink {
         , m_constant_arguments(blink::utility::refer_elements(m_arguments, constant_indices{}))
         , m_applicator(this)
         , m_transform_range(m_applicator, m_ranges)
-      {}
+      {
+       // std::cout << "moved" << std::endl;
+      }
 
       template<class InFunction, class... InArgs>
       range_algebra_transform(InFunction&& f, InArgs&&... args) 
@@ -163,8 +171,6 @@ namespace blink {
         return m_f(get_value<S>(variables)...);
       }
 
-      
-
       applicator m_applicator;
       Function m_f;
       all_tuple m_arguments;
@@ -183,16 +189,41 @@ namespace blink {
 
       return type(std::forward<Function>(f), std::forward<Args>(a)...);
     }
+
    
     template<class Function, class...Args>
     range_algebra_wrapper <
       range_algebra_transform <special_decay_t<Function>, special_decay_t<Args>...> >
       range_algebra_function(Function&& f, Args&&... a)
     {
-      using type =
-        range_algebra_transform < special_decay_t<Function>, special_decay_t<Args>... >;
-      type rat(std::forward<Function>(f), std::forward<Args>(a)...);
-      return range_algebra_val(std::move(rat));
+      
+        return range_algebra(
+          make_range_algebra_transform(std::forward<Function>(f)
+          , std::forward<Args>(a)...));
+    }
+
+    template<class T>
+    struct  reference_or_move
+    {
+      const static bool is_lvalue = std::is_lvalue_reference<T>::value;
+      using type = typename std::conditional
+        < is_lvalue
+        , decay_t<T>&
+        , decay_t<T> >::type;
+    };
+
+    template<class T>
+    using  reference_or_move_t = typename reference_or_move<T>::type;
+
+
+    template<class Function, class...Args>
+    range_algebra_wrapper <
+      range_algebra_transform <special_decay_t<Function>, reference_or_move_t<Args>...> >
+      ra_function(Function&& f, Args&&... a)
+    {
+        using type =
+          range_algebra_transform < special_decay_t<Function>, reference_or_move_t<Args>... >;
+        return range_algebra(type(std::forward<Function>(f), std::forward<Args>(a)...));
     }
     
   }

@@ -7,113 +7,92 @@
 // Distributed under the MIT Licence (http://opensource.org/licenses/MIT)
 //=======================================================================
 //
-// Implement the operator+ overloads for range_algebra_wrappers
+// Implement the operator|| overloads for range_algebra_wrappers
 
 #ifndef BLINK_ITERATOR_RANGE_ALGEBRA_LOGICAL_OR_H_AHZ
 #define BLINK_ITERATOR_RANGE_ALGEBRA_LOGICAL_OR_H_AHZ
 
+#include <blink/iterator/range_algebra_transform.h>
 #include <blink/iterator/range_algebra_wrapper.h>
 #include <blink/iterator/transform_range.h>
+#include <functional>
 
-namespace blink
-{
+namespace blink {
   namespace iterator {
-    struct logical_or
-    {
+    namespace logical_or_operator {
+
+      using fun = std::logical_or<>;
+
+      template<class R> using wrap = range_algebra_wrapper<R>;
+      template<class T> using dec = special_decay_t<T>;
+
       template<class A, class B>
-      auto operator()(A&& a, B&& b) const->decltype(std::forward<A>(a) || 
-        std::forward<B>(b))
+      using trans1 = range_algebra_transform<fun, A, B>;
+
+      template<class A, class B>
+      using trans2 = transform_range<fun, A, B>;
+
+      using std::move;
+      using std::ref;
+      using std::forward;
+
+      template<class R, class T>
+      wrap< trans1< wrap<R>, dec<T> > >
+        operator||(wrap<R>&& r, T&& v)
       {
-        return a || b;
+          return range_algebra_function(fun{}, move(r), forward<T>(v));
       }
-    };
 
-    template<class Constant>
-    struct logical_or_constant_pre
-    {
-      logical_or_constant_pre(Constant a) : a(a)
-      {}
-
-      template<class B>
-      auto operator()(B&& b) const -> decltype(a || std::forward<B>(b))
+      template<class R, class T>
+      wrap< trans1< wrap<R>&, dec<T> > >
+        operator||(wrap<R>& r, T&& v)
       {
-        return a || b;
+          return range_algebra_function(fun{}, ref(r), forward<T>(v));
       }
-      const Constant a;
-    };
 
-    template<class Constant>
-    struct logical_or_constant
-    {
-      logical_or_constant(Constant b) : b(b)
-      {}
-
-      template<class A>
-      auto operator()(A&& a) const -> decltype(std::forward<A>(a) || b)
+      template<class R, class T>
+      wrap< trans1< dec<T>, wrap<R> > >
+        operator||(T&& v, wrap<R>&& r)
       {
-        return a || b;
+          return range_algebra_function(fun{}, forward<T>(v), move(r));
       }
-      const Constant b;
-    };
 
-    template<class R1, class R2>
-    struct logical_or_helper
-    {
-      using r1 = typename std::remove_reference<R1>::type;
-      using r2 = typename std::remove_reference<R2>::type;
-      using v1 = typename r1::value_type;
-      using v2 = typename r2::value_type;
-      using result_type = decltype(std::declval<v1>() || std::declval<v2>());
-      using range = transform_range <logical_or, R1, R2>;
-    };
+      template<class R, class T>
+      wrap< trans1< dec<T>, wrap<R>& > >
+        operator||(T&& v, wrap<R>& r)
+      {
+          return range_algebra_function(fun{}, forward<T>(v), ref(r));
+      }
 
-    template<class R, class T>
-    struct logical_or_constant_helper
-    {
-      using r = typename std::remove_reference<R>::type;
-      using v1 = typename r::value_type;
-      using v2 = typename T;
-      using result_type = decltype(std::declval<v1>() || std::declval<v2>());
-      using range = transform_range<logical_or_constant<v2>, R>;
-    };
+      template<class R1, class R2>
+      wrap< trans2< wrap<R1>, wrap<R2> > >
+        operator||(wrap<R1>&& r1, wrap<R2>&& r2)
+      {
+          return range_algebra(
+            make_transform_range(fun{}, move(r1), move(r2)));
+      }
 
-    template<class R, class T>
-    struct logical_or_constant_pre_helper
-    {
-      using r = typename std::remove_reference<R>::type;
-      using v1 = typename T;
-      using v2 = typename r::value_type;
-      using result_type = decltype(std::declval<v1>() || std::declval<v2>());
-      using range = transform_range<logical_or_constant_pre<v1>, R>;
-    };
+      template<class R1, class R2>
+      wrap< trans2< wrap<R1>, wrap<R2>& > >
+        operator||(wrap<R1>&& r1, wrap<R2>& r2)
+      {
+          return range_algebra(make_transform_range(fun{}, move(r1), ref(r2)));
+      }
 
-    template<class R, class T>
-    range_algebra_wrapper<typename logical_or_constant_helper<
-      range_algebra_wrapper<R>, T>::range>
-      operator||(const range_algebra_wrapper<R>& r, const T& constant)
-    {
-      return range_algebra_val(logical_or_constant_helper<range_algebra_wrapper<R>, T>
-        ::range(logical_or_constant<T>(constant), r));
+      template<class R1, class R2>
+      wrap< trans2< wrap<R1>&, wrap<R2> > >
+        operator||(wrap<R1>& r1, wrap<R2>&& r2)
+      {
+          return range_algebra(make_transform_range(fun{}, ref(r1), move(r2)));
+      }
+      template<class R1, class R2>
+      wrap< trans2< wrap<R1>&, wrap<R2>& > >
+        operator||(wrap<R1>& r1, wrap<R2>& r2)
+      {
+          return range_algebra(make_transform_range(fun{}, ref(r1), ref(r2)));
+      }
     }
-
-    template<class R, class T>
-    range_algebra_wrapper<typename logical_or_constant_pre_helper<
-      range_algebra_wrapper<R>, T>::range>
-      operator||(const T& constant, const range_algebra_wrapper<R>& r)
-    {
-      return range_algebra_val(logical_or_constant_pre_helper<range_algebra_wrapper<R>, T>
-        ::range(logical_or_constant_pre<T>(constant), r));
-    }
-
-    template<class R1, class R2>
-    range_algebra_wrapper<typename logical_or_helper<range_algebra_wrapper<R1>, 
-      range_algebra_wrapper<R2>>::range>
-      operator||(const range_algebra_wrapper<R1>& r1, 
-      const range_algebra_wrapper<R2>& r2)
-    {
-      return range_algebra_val(logical_or_helper<range_algebra_wrapper<R1>, 
-        range_algebra_wrapper<R2>>::range(logical_or{}, r1, r2));
-    }
+    using logical_or_operator::operator||;
   }
 }
 #endif
