@@ -22,6 +22,7 @@
 #include <blink/iterator/range_algebra_logical_and.h>
 #include <blink/iterator/range_algebra_logical_or.h>
 #include <blink/iterator/range_algebra_logical_not.h>
+#include <blink/iterator/range_algebra_modulus.h>
 #include <blink/iterator/range_algebra_greater.h>
 #include <blink/iterator/range_algebra_greater_equal.h>
 #include <blink/iterator/range_algebra_less.h>

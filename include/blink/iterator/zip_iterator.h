@@ -54,6 +54,20 @@ namespace blink {
       zip_iterator(const zip_iterator& it) : m_iterators(it.m_iterators)
       { }
 
+      // This constructor was only made to satisfy the is_convertible type_trait.
+      // Which in turn enables comparison operators in boost facade
+      // It is not really intended to be used...
+      
+      template < typename... InIterators, typename = typename std::enable_if<
+        std::is_same
+        < std::tuple<decay_t<InIterators>... >
+        , std::tuple<decay_t<Iterators>... > >::value
+        >::type>
+        zip_iterator(const zip_iterator<InIterators...>& that) : m_iterators(that.m_iterators)
+      {
+        assert(false); // TODO: remove this assert, if we find that this constructor actually has a valid use.
+      }
+
       template<class... InIterators>
       explicit zip_iterator(InIterators&&... its) : m_iterators(std::forward<InIterators>(its)...)
       { }
@@ -63,8 +77,15 @@ namespace blink {
         m_iterators = it.m_iterators;
         return *this;
       }
+
+      zip_iterator& operator=(zip_iterator&& it)
+      {
+        m_iterators = std::move(it.m_iterators);
+        return *this;
+      }
     private:
       friend boost::iterator_core_access;
+      template <class...> friend class zip_iterator;
       template<std::size_t ...S>  reference dereference(blink::utility::index_sequence<S...>) const
       {
         return reference(*get<S>()...);
@@ -127,16 +148,18 @@ namespace blink {
 
     public:
       // should really be implemented by facade, but it only compares iterator against const_iterator
-      template<class... OtherIterators > //OtherIterators can be different in type of references, etc
-      bool operator!=(const zip_iterator<OtherIterators...>& that) const
-      {
-        return !equal(that);
-      }
-      template<class... OtherIterators > //OtherIterators can be different in type of references, etc
-      bool operator==(const zip_iterator<OtherIterators...>& that) const
-      {
-        return equal(that);
-      }
+      // This is solved now, by adding a converting constructor (see above)
+
+      //template<class... OtherIterators > //OtherIterators can be different in type of references, etc
+      //bool operator!=(const zip_iterator<OtherIterators...>& that) const
+      //{
+      //  return !equal(that);
+      //}
+      //template<class... OtherIterators > //OtherIterators can be different in type of references, etc
+      //bool operator==(const zip_iterator<OtherIterators...>& that) const
+      //{
+      //  return equal(that);
+     // }
 
       template<std::size_t I>
       selected_iterator<I>& get()

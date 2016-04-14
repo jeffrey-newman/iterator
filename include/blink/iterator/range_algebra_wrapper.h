@@ -1,6 +1,6 @@
 //
 //=======================================================================
-// Copyright 206
+// Copyright 2016
 // Author: Alex Hagen-Zanker
 // University of Surrey
 //

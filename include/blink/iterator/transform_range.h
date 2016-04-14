@@ -99,11 +99,11 @@ namespace blink {
     };
 
     template<class Function, class...Ranges>
-    transform_range<Function, special_decay_t<Ranges>...>
-      make_transform_range (Function f, Ranges&&... rgs)
+    transform_range<special_decay_t<Function>, special_decay_t<Ranges>...>
+      make_transform_range (Function&& f, Ranges&&... rgs)
     {
-      using return_type = transform_range < Function, special_decay_t<Ranges>... >;
-      return return_type(f, std::forward<Ranges>(rgs)...);
+      using return_type = transform_range < special_decay_t<Function>, special_decay_t<Ranges>... >;
+      return return_type(std::forward<Function>(f), std::forward<Ranges>(rgs)...);
     }
   }
 }

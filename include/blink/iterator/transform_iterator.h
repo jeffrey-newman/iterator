@@ -53,17 +53,28 @@ namespace blink {
       transform_iterator(const transform_iterator& it) : m_iterators(it.m_iterators), m_f(it.m_f)
       { }
 
+      transform_iterator(transform_iterator&& it) : m_iterators(std::move(it.m_iterators)), m_f(std::move(it.m_f))
+      { }
+
       template<class... InIterators>
       explicit transform_iterator(Function f, InIterators&&... its) 
         : m_f(f), m_iterators(std::forward<InIterators>(its)...)
       { }
-
+      
       transform_iterator& operator=(const transform_iterator& it)
       {
         m_iterators = it.m_iterators;
         m_f = it.m_f;
         return *this;
       }
+
+      transform_iterator& operator=(transform_iterator&& it)
+      {
+        m_iterators = std::move(it.m_iterators);
+        m_f = std::move(it.m_f);
+        return *this;
+      }
+
     private:
       friend boost::iterator_core_access;
       template<std::size_t ...S>
@@ -165,15 +176,15 @@ namespace blink {
 
     template<class Function, class...Iterators>  
     transform_iterator < 
-      Function,
+      special_decay_t<Function>,
       get_value_type2<Function, Iterators...>,
       special_decay_t< Iterators>... >
-      make_transform_iterator(Function fn, Iterators&&... its)
+      make_transform_iterator(Function&& fn, Iterators&&... its)
     {
       return transform_iterator <
-        Function,
+        special_decay_t<Function>,
         get_value_type2<Function, Iterators...>,
-        special_decay_t< Iterators>... >(fn, std::forward<Iterators>(its)...);
+        special_decay_t< Iterators>... >(std::forward<Function>(fn), std::forward<Iterators>(its)...);
     }
   }
 }
