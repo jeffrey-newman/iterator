@@ -20,65 +20,7 @@
 namespace blink {
   namespace iterator {
 
-#define BLINK_ITERATOR_RANGE_ALGEBRA_OPERATOR(space, op,func)                  \
-    namespace space {                                                          \
-    using fun = func;                                                          \
-      template<class R> using wrap = range_algebra_wrapper<R>;                 \
-      template<class T> using dec = special_decay_t<T>;                        \
-      template<class A, class B>                                               \
-      using trans1 = range_algebra_transform<fun, A, B>;                       \
-      template<class A, class B>                                               \
-      using trans2 = transform_range<fun, A, B>;                               \
-      using std::move;                                                         \
-      using std::ref;                                                          \
-      using std::forward;                                                      \
-                                                                               \
-      template<class R, class T>                                               \
-      wrap< trans1< wrap<R>, dec<T> > >                                        \
-      operator op(wrap<R>&& r, T&& v)                                          \
-    { return range_algebra_function(fun{}, move(r), forward<T>(v)); }        \
-    \
-    template<class R, class T>                                               \
-    wrap< trans1< wrap<R>&, dec<T> > > operator op(wrap<R>& r, T&& v)        \
-    { return range_algebra_function(fun{}, ref(r), forward<T>(v)); }         \
-    template<class R, class T>                                               \
-    \
-    wrap< trans1< dec<T>, wrap<R> > > operator op(T&& v, wrap<R>&& r)        \
-    { return range_algebra_function(fun{}, forward<T>(v), move(r)); }        \
-    template<class R, class T>                                               \
-    wrap< trans1< dec<T>, wrap<R>& > > operator op(T&& v, wrap<R>& r)        \
-    { return range_algebra_function(fun{}, forward<T>(v), ref(r)); }         \
-    template<class R1, class R2>                                             \
-    wrap< trans2< wrap<R1>, wrap<R2> > > operator op(wrap<R1>&& r1           \
-    , wrap<R2>&& r2)                                                       \
-    { return range_algebra(\
-    make_transform_range(fun{}, move(r1), move(r2))); }                    \
-    template<class R1, class R2>                                             \
-    wrap< trans2< wrap<R1>, wrap<R2>& > > operator op(wrap<R1>&& r1          \
-    , wrap<R2>& r2)                                                        \
-    {                                                                        \
-    return range_algebra(make_transform_range(fun{}, move(r1), ref(r2))); \
-    }                                                                        \
-    \
-    template<class R1, class R2>                                             \
-    wrap< trans2< wrap<R1>&, wrap<R2> > >                                    \
-    operator op(wrap<R1>& r1, wrap<R2>&& r2)                               \
-    {                                                                        \
-    return range_algebra(make_transform_range(fun{}, ref(r1), move(r2))); \
-    }                                                                        \
-    template<class R1, class R2>                                             \
-    wrap< trans2< wrap<R1>&, wrap<R2>& > >                                   \
-    operator op(wrap<R1>& r1, wrap<R2>& r2)                                \
-    {                                                                        \
-    return range_algebra(make_transform_range(fun{}, ref(r1), ref(r2))); \
-    }                                                                        \
-    } \
-    using space::operator op;\
-   
 
-
-
-   /*
 
     namespace plus_operator {
 
@@ -154,7 +96,8 @@ namespace blink {
       }
     }
     using plus_operator::operator+;
-    */
+    
   }
 }
+
 #endif
