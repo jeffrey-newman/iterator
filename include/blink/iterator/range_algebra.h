@@ -9,7 +9,6 @@
 //=======================================================================
 //
 // range_algebra allows element-by-element operations on ranges
-// So far only implemented for plus
 
 #ifndef BLINK_ITERATOR_RANGE_ALGEBRA_H_AHZ
 #define BLINK_ITERATOR_RANGE_ALGEBRA_H_AHZ
