@@ -7,7 +7,7 @@
 // Distributed under the MIT Licence (http://opensource.org/licenses/MIT)
 //=======================================================================
 //
-// index_sequence is now parrt of C++14
+// index_sequence is now part of C++14
 
 #ifndef BLINK_UTILITY_INDEX_SEQUENCE_H_AHZ
 #define BLINK_UTILITY_INDEX_SEQUENCE_H_AHZ

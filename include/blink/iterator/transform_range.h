@@ -29,17 +29,18 @@ namespace blink {
     private:
      
       using ranges_tuple = std::tuple <Ranges...>;
-      using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<ranges_tuple>::value >;
+      static const std::size_t N = std::tuple_size<ranges_tuple>::value;
+      using tuple_indices = blink::utility::make_index_sequence < N >;
       template<std::size_t I>
       using selected_range = tuple_element_t<I, ranges_tuple>;
 
     public:
       //using value_type = Value;
-      using value_type = typename transform_helper<Function, Ranges...>::value_type;
-      // use get_iterator_t instead of ::iterator to overcome Visual Studio bug
+      using value_type =  transform_iterator_value_type_t<Function, 
+        get_iterator_t<remove_reference_t<Ranges> >...>;
+
       using iterator = transform_iterator < 
         Function,
-        value_type,
         get_iterator_t<remove_reference_t<Ranges> >... > ;
 
       // Perhaps this should be deleted?
@@ -84,12 +85,14 @@ namespace blink {
       }
 
     private:
-      template<std::size_t ...S> iterator begin(blink::utility::index_sequence<S...>)
+      template<std::size_t ...S> 
+      iterator begin(blink::utility::index_sequence<S...>)
       {
         return iterator(m_f, (std::get<S>(m_ranges).begin())...);
       }
 
-      template<std::size_t ...S> iterator end(blink::utility::index_sequence<S...>)
+      template<std::size_t ...S> 
+      iterator end(blink::utility::index_sequence<S...>)
       {
         return iterator(m_f, (std::get<S>(m_ranges).end())...);
       }

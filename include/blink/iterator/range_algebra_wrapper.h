@@ -29,6 +29,11 @@ namespace blink
       range_algebra_wrapper(range_algebra_wrapper&& that) : m_range(std::move(that.m_range))
       {}
 
+      template < typename InRange, typename = enable_if_t<
+        std::is_same<special_decay_t<InRange>, Range>::value> >
+        range_algebra_wrapper(InRange&& r) : m_range(std::forward<InRange>(r))
+      {}
+
       template<class SomeConstant>
       range_algebra_wrapper& operator=(const SomeConstant& c)
       {
@@ -110,22 +115,6 @@ namespace blink
      // range_algebra_wrapper& operator<<=(SomeRange& r)
      // range_algebra_wrapper& operator>>=(SomeRange& r)
       
-      //range_algebra_wrapper& operator=(const range_algebra_wrapper& that)
-      //{
-      //  m_range = that.m_range;
-      //}
-
-      //range_algebra_wrapper& operator=(range_algebra_wrapper&& that)
-      //{
-      //  m_range = std::move(that.m_range);
-      //}
-
-      template<typename InRange, typename X =
-        detail::disable_if_same_or_derived<range_algebra_wrapper, InRange >>
-
-        range_algebra_wrapper(InRange&& r) : m_range(std::forward<InRange>(r))
-      {}
-
       using range_type = typename std::remove_reference<Range>::type;
       using value_type = typename range_type::iterator::value_type;
       using reference = typename range_type::iterator::reference;

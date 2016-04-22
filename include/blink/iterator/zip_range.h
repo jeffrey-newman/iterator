@@ -30,17 +30,23 @@ namespace blink {
     private:
      
       using ranges_tuple = std::tuple <Ranges...>;
-      using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<ranges_tuple>::value >;
+      using tuple_indices = blink::utility::make_index_sequence 
+        < std::tuple_size<ranges_tuple>::value >;
+      
       template<std::size_t I>
       using selected_range = tuple_element_t<I, ranges_tuple>;
 
     public:
-
       // use get_iterator instead of ::iterator to overcome Visual Studio bug
-      using iterator = zip_iterator < get_iterator_t< remove_reference_t<Ranges> >... > ;
+      using iterator = zip_iterator < 
+        get_iterator_t< remove_reference_t<Ranges> >... > ;
 
-      template<class... InRanges>
-      explicit zip_range(InRanges&&... ranges) : m_ranges(std::forward<InRanges>(ranges)...)
+      template < typename... InRanges, typename = enable_if_t<
+        std::is_same
+        < std::tuple<special_decay_t<InRanges>... >
+        , std::tuple<Ranges... > >::value> >
+      zip_range(InRanges&&... ranges) 
+        : m_ranges(std::forward<InRanges>(ranges)...)
       { }
 
       iterator begin()
@@ -64,14 +70,16 @@ namespace blink {
       }
 
     private:
-      template<std::size_t ...S> iterator begin(blink::utility::index_sequence<S...>)
+      template< template<std::size_t...> class Pack, std::size_t ...S> 
+      iterator begin(Pack<S...>)
       {
-        return iterator((std::get<S>(m_ranges).begin())...);
+        return make_zip_iterator(std::get<S>(m_ranges).begin()...);
       }
 
-      template<std::size_t ...S> iterator end(blink::utility::index_sequence<S...>)
+      template< template<std::size_t...> class Pack, std::size_t ...S>
+      iterator end(Pack<S...>)
       {
-        return iterator((std::get<S>(m_ranges).end())...);
+        return make_zip_iterator(std::get<S>(m_ranges).end()...);
       }
 
       ranges_tuple m_ranges;

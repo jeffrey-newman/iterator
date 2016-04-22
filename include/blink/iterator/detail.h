@@ -23,14 +23,30 @@ namespace blink {
     // some basic Meta Programming for which I do not have a good place
     namespace detail {
 
-      // TODO use std::iterator_traits? requires full set of traits for indicators, including pointer and iterator_category
-      template<class Iterator> struct get_reference { using type = typename Iterator::reference; };
-      template<class Iterator> using get_reference_t = typename get_reference<Iterator>::type;
-      template<class Iterator> struct get_value_type { using type = typename Iterator::value_type; };
-      template<class Iterator> using get_value_type_t = typename get_value_type<Iterator>::type;
+      // TODO use std::iterator_traits? requires full set of traits for 
+      // indicators, including pointer and iterator_category
+      template<class Iterator> 
+      struct get_reference { 
+        using type = typename Iterator::reference; 
+      };
+      
+      template<class Iterator> 
+      using get_reference_t = typename get_reference<Iterator>::type;
+      
+      template<class Iterator> 
+      struct get_value_type { 
+        using type = typename Iterator::value_type; };
+      
+      template<class Iterator> 
+      using get_value_type_t = typename get_value_type<Iterator>::type;
 
-      template<class Range> struct get_iterator { using type = typename Range::iterator; };
-      template<class Range> using get_iterator_t = typename get_iterator<Range>::type;
+      template<class Range> 
+      struct get_iterator { 
+        using type = typename Range::iterator; 
+      };
+      
+      template<class Range> 
+      using get_iterator_t = typename get_iterator<Range>::type;
       
       template<class T> using get_type = typename T::type;
 
@@ -38,7 +54,8 @@ namespace blink {
       using remove_reference_t = typename std::remove_reference<T>::type;
 
       template<class T>
-      using add_lvalue_reference_t = typename std::add_lvalue_reference<T>::type;
+      using add_lvalue_reference_t 
+        = typename std::add_lvalue_reference<T>::type;
 
       template<class T>
       using decay_t = typename std::decay<T>::type;
@@ -62,30 +79,27 @@ namespace blink {
       };
 
       template <class T>
-      using special_decay_t = typename unwrap_refwrapper<typename std::decay<T>::type>::type;
+      using special_decay_t = typename unwrap_refwrapper<
+        typename std::decay<T>::type>::type;
 
       template<template<class...> class, class>  struct apply_to_pack{};
-      template<template<class...> class F, template<class...> class Pack, class... Elements>
+      
+      template<template<class...> class F, template<class...> class Pack, 
+        class... Elements>
       struct apply_to_pack < F, Pack<Elements...> >
       {
         using type = Pack < F<Elements>... > ;
       };
-
+            
       template<template<class...> class F, class Pack>
       using apply_to_pack_t = typename apply_to_pack < F, Pack >::type;
-
-      //http://ericniebler.com/2013/08/07/universal-references-and-the-copy-constructo/
-      // write this once and put it somewhere you can
-      // reuse it
-      template<typename A, typename B>
-      using disable_if_same_or_derived =
-        typename std::enable_if<
-        !std::is_base_of<A, typename
-        std::remove_reference<B>::type
-        >::value
-        >::type;
-
       
+      template< bool B, class T = void >
+      using enable_if_t = typename std::enable_if<B, T>::type;
+
+      template< bool C, class A, class B >
+      using conditional_t = typename std::conditional<C, A, B>::type;
+
     }
     using detail::do_nothing;
     using detail::special_decay_t;
@@ -97,6 +111,9 @@ namespace blink {
     using detail::tuple_element_t;
     using detail::add_lvalue_reference_t;
     using detail::apply_to_pack_t;
+    using detail::enable_if_t;
+    using detail::conditional_t;
+
   }
 }
 

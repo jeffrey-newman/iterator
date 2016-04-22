@@ -26,39 +26,61 @@
 namespace blink {
   namespace iterator {
 
-    template<class Function, class... Ranges> struct transform_helper
-    {
-      //TODO: should use range_traits for value_type instead?
-      using value_type = decltype(std::declval<Function>()(typename std::declval<
-      remove_reference_t<special_decay_t<Ranges> > ::value_type>()...));
-    };
+    template<class Function, class... Iterators>
+    using transform_iterator_reference_t = decltype(std::declval<remove_reference_t<Function>>()(
+      std::declval<get_reference_t<remove_reference_t<Iterators> > >()...));
 
-    template < class Function, class Value, class... Iterators >
+    template<class Function, class... Iterators>
+    struct transform_iterator_value_type
+    {
+      using reference = transform_iterator_reference_t<Function, Iterators...>;
+      using type = remove_reference_t<reference>;
+    };
+    
+    template<class Function, class... Iterators>
+    using transform_iterator_value_type_t = 
+      typename transform_iterator_value_type<Function, Iterators...>::type;
+
+    template < class Function, class... Iterators >
     class transform_iterator : public 
-      boost::iterator_facade < transform_iterator<Function, Value, Iterators...>,
-      Value,
-      boost::random_access_traversal_tag,
-      Value >
+      boost::iterator_facade 
+      < transform_iterator<Function, Iterators...>
+      , transform_iterator_value_type_t<Function, Iterators...>
+      , boost::random_access_traversal_tag
+      , transform_iterator_reference_t<Function, Iterators...> >
     {
       using iterators = std::tuple < Iterators... > ;
-      using tuple_indices = blink::utility::make_index_sequence < std::tuple_size<iterators>::value > ;
+      static const std::size_t N = std::tuple_size<iterators>::value;
+      using tuple_indices = blink::utility::make_index_sequence <N> ;
 
       template<std::size_t I>
       using selected_iterator = tuple_element_t<I, iterators>;
 
 
     public:
-      using reference = Value;
+      using reference = transform_iterator_reference_t<Function, Iterators...>;
+      using value_type = transform_iterator_value_type_t<Function, Iterators...>;
 
-      transform_iterator(const transform_iterator& it) : m_iterators(it.m_iterators), m_f(it.m_f)
+      transform_iterator(const transform_iterator& it) 
+        : m_iterators(it.m_iterators), m_f(it.m_f)
       { }
 
-      transform_iterator(transform_iterator&& it) : m_iterators(std::move(it.m_iterators)), m_f(std::move(it.m_f))
+      transform_iterator(transform_iterator&& it) 
+        : m_iterators(std::move(it.m_iterators)), m_f(std::move(it.m_f))
       { }
 
-      template<class... InIterators>
-      explicit transform_iterator(Function f, InIterators&&... its) 
-        : m_f(f), m_iterators(std::forward<InIterators>(its)...)
+      
+      template<class InFunction, class... InIterators
+        , typename = enable_if_t
+        < std::is_same< special_decay_t<InFunction>, Function >::value > 
+        , typename = enable_if_t
+        < std::is_same
+        < std::tuple<special_decay_t<InIterators>... >
+        , std::tuple<Iterators... > >::value>
+      >
+      transform_iterator(InFunction&& f, InIterators&&... its)
+        : m_f(std::forward<InFunction>(f))
+        , m_iterators(std::forward<InIterators>(its)...)
       { }
       
       transform_iterator& operator=(const transform_iterator& it)
@@ -75,82 +97,6 @@ namespace blink {
         return *this;
       }
 
-    private:
-      friend boost::iterator_core_access;
-      template<std::size_t ...S>
-      Value dereference(blink::utility::index_sequence<S...>) const
-      {
-        return m_f(*get<S>()...);
-
-      }
-      Value dereference() const
-      {
-        return dereference(tuple_indices());
-      }
-
-
-      template<std::size_t ...S> void increment(blink::utility::index_sequence<S...>)
-      {
-        do_nothing(++get<S>()...);
-      }
-
-      void increment()
-      {
-        increment(tuple_indices());
-      }
-
-      template<std::size_t ...S> void decrement(blink::utility::index_sequence<S...>)
-      {
-        do_nothing(--get<S>()...);
-      }
-
-      void decrement()
-      {
-        decrement(tuple_indices());
-      }
-
-      template<std::size_t ...S> void advance(blink::utility::index_sequence<S...>, std::ptrdiff_t n)
-      {
-        do_nothing((get<S>() += n)...);
-      }
-
-      void advance(std::ptrdiff_t n)
-      {
-        advance(tuple_indices(), n);
-      }
-
-      template<class... OtherIterators >
-      std::ptrdiff_t distance_to(const zip_iterator<OtherIterators...>& that) const
-      {
-        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
-          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
-
-        return std::distance(std::get<0>(m_iterators), that.get<0>());
-      }
-
-      template<class... OtherIterators >
-      bool equal(const transform_iterator<Function, Value, OtherIterators...>& that) const
-      {
-        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
-          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
-
-        return std::get<0>(m_iterators) == that.get<0>();
-      }
-
-
-    public:
-      // should really be implemented by facade, but it only compares iterator against const_iterator
-      template<class... OtherIterators > //OtherIterators can be different in type of references, etc
-      bool operator!=(const zip_iterator<OtherIterators...>& that) const
-      {
-        return !equal(that);
-      }
-      template<class... OtherIterators > //OtherIterators can be different in type of references, etc
-      bool operator==(const zip_iterator<OtherIterators...>& that) const
-      {
-        return equal(that);
-      }
-
       template<std::size_t I>
       selected_iterator<I>& get()
       {
@@ -164,27 +110,84 @@ namespace blink {
       }
 
     private:
+      friend boost::iterator_core_access;
+
+      template<template<std::size_t...> class Pack, std::size_t ...S>
+      value_type dereference(Pack<S...>) const
+      {
+        return m_f(*std::get<S>(m_iterators)...);
+
+      }
+      value_type dereference() const
+      {
+        return dereference(tuple_indices());
+      }
+      
+      template<template<std::size_t...> class Pack, std::size_t ...S>
+      void increment(Pack<S...>)
+      {
+        do_nothing(++std::get<S>(m_iterators)...);
+      }
+
+      void increment()
+      {
+        increment(tuple_indices());
+      }
+
+      template<template<std::size_t...> class Pack, std::size_t ...S>
+      void decrement(Pack<S...>)
+      {
+        do_nothing(--get<S>()...);
+      }
+
+      void decrement()
+      {
+        decrement(tuple_indices());
+      }
+
+      template<template<std::size_t...> class Pack, std::size_t ...S> 
+      void advance(Pack<S...>, std::ptrdiff_t n)
+      {
+        do_nothing((get<S>() += n)...);
+      }
+
+      void advance(std::ptrdiff_t n)
+      {
+        advance(tuple_indices(), n);
+      }
+
+      template<class OtherFunction, class... OtherIterators >
+      std::ptrdiff_t distance_to(const transform_iterator<OtherFunction, OtherIterators...>& that) const
+      {
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
+
+        return std::distance(std::get<0>(m_iterators), that.get<0>());
+      }
+
+      template<class OtherFunction, class... OtherIterators >
+      bool equal(const transform_iterator<OtherFunction, OtherIterators...>& that) const
+      {
+        static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
+          , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
+
+        return std::get<0>(m_iterators) == that.get<0>();
+      }
+
+    private:
       iterators m_iterators;
       Function m_f;
     };
 
-   
-    template<class Function, class...Iterators>
-    using get_value_type2
-      = decltype(std::declval(Function)(std::declval(Iterators::value_type)...));
-
-
     template<class Function, class...Iterators>  
     transform_iterator < 
       special_decay_t<Function>,
-      get_value_type2<Function, Iterators...>,
-      special_decay_t< Iterators>... >
+      special_decay_t<Iterators>... >
       make_transform_iterator(Function&& fn, Iterators&&... its)
     {
-      return transform_iterator <
-        special_decay_t<Function>,
-        get_value_type2<Function, Iterators...>,
-        special_decay_t< Iterators>... >(std::forward<Function>(fn), std::forward<Iterators>(its)...);
+      return transform_iterator < special_decay_t<Function>,
+        special_decay_t< Iterators>... >
+        (std::forward<Function>(fn), std::forward<Iterators>(its)...);
     }
   }
 }

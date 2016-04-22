@@ -9,11 +9,20 @@
 //=======================================================================
 //
 // range_algebra_transform allows element-by-element function on combinations
-// of ranges and scalars. 
-// It works now, but it way more complicated than necessary. Instead of unpicking 
-// the input arguments into ranges and values I should have converted the values 
-// to a range that always return the same value. Then it can be used with 
-// transform_range easily
+// of range_algebra wrapped ranges and other values (constant_arguments). 
+// 
+// It works now, but it is way more complicated than necessary. The current 
+// solution unpicks the input arguments into range_algebra ranges and other
+// values. It then creates transform_range that zip-iterates over the 
+// range_algebra ranges and puts the iterated values and and constant_values
+// back in the right order again. 
+//
+// A simpler solution would have been to convert the scalars to a range that 
+// always returns the same value, e.g. constant_range, then the transform_range
+// can be used directly without the need to unpick arguments and recompose them. 
+//
+// Oh well, it works very well now.
+
 
 
 #ifndef BLINK_ITERATOR_RANGE_ALGEBRA_TRANSFORM_H_AHZ
@@ -37,11 +46,12 @@ namespace blink {
     template<class T>
     struct argument_type
     {
-      using input_type = typename std::decay< T >::type;
+      using input_type = decay_t<T>;
       const static bool is_range = is_range_algebra_wrapped < input_type >::value;
       
-      using lazy_type = typename std::conditional<is_range, 
-        detail::get_value_type<input_type>, std::identity<input_type> >::type;
+      using lazy_type = conditional_t<is_range, 
+        detail::get_value_type<input_type>, std::identity<input_type> >;
+
       using type = typename lazy_type::type;
     };
 
@@ -111,8 +121,8 @@ namespace blink {
       using transform_range = typename transform_range_helper_t::type;
       using iterator = get_iterator_t < transform_range > ;
      
-      range_algebra_transform(const range_algebra_transform& that) 
-        : m_f(that.m_f)
+      range_algebra_transform(const range_algebra_transform& that) = delete;
+/*        : m_f(that.m_f)
         , m_arguments(that.m_arguments)
         , m_ranges(blink::utility::refer_elements(m_arguments, variable_indices{}))
         , m_constant_arguments(blink::utility::refer_elements(m_arguments, constant_indices{}))
@@ -120,9 +130,9 @@ namespace blink {
         , m_transform_range(m_applicator, m_ranges)
       {
         std::cout << "copied" << std::endl;
-//        assert(false);
+        assert(false); // remove this assert, if we find that copying should be allowed
       }
-
+      */
       range_algebra_transform(range_algebra_transform&& that)
         : m_f(std::move(that.m_f) )
         , m_arguments(std::move(that.m_arguments))
