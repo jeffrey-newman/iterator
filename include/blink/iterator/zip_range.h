@@ -14,9 +14,10 @@
 #ifndef BLINK_ITERATOR_ZIP_RANGE_H_AHZ
 #define BLINK_ITERATOR_ZIP_RANGE_H_AHZ
 
-#include <blink\utility\index_sequence.h>
-#include <blink\iterator\zip_iterator.h>
-#include <blink\iterator\detail.h>
+//Macos clang does not like backslash
+#include <blink/utility/index_sequence.h>
+#include <blink/iterator/zip_iterator.h>
+#include <blink/iterator/detail.h>
 
 #include <type_traits> // remove_reference
 #include <tuple>
