@@ -147,7 +147,10 @@ namespace blink {
           , std::tuple<decay_t<Iterators>... > > ::value
           , "incompatible iterators");
 
-        return std::distance(std::get<0>(m_iterators), that.get<0>());
+          //JN Macos clang complains of that.get<0>(): "Expected expression"
+//        return std::distance(std::get<0>(m_iterators), that.get<0>());
+          // Should this be that.m_iterators.
+                    return std::distance(std::get<0>(m_iterators), std::get<0>(that));
       }
 
       template<class... OtherIters >
@@ -164,7 +167,10 @@ namespace blink {
           , std::tuple < decay_t <Iterators>... > > ::value
           , "incompatible iterators");
 
-        return std::get<0>(m_iterators) == that.get<0>();
+          //JN Macos clang complains "Expected unqualified-id"
+//        return std::get<0>(m_iterators) == that.get<0>();
+          // was not able to apply == with std::get<0>(that): compiles with that.m_iterators. Not much idea of what std::get is getting different between these.....
+          return (std::get<0>(m_iterators) == std::get<0>(that.m_iterators));
       }
       /*
       template<class... OtherIters >
