@@ -13,11 +13,13 @@
 #ifndef BLINK_ITERATOR_TRANSFORM_ITERATOR_H_AHZ
 #define BLINK_ITERATOR_TRANSFORM_ITERATOR_H_AHZ
 
-#include <blink\iterator\detail.h>
-#include <blink\utility\index_sequence.h>
-#include <blink\iterator\zip_iterator.h>
 
-#include <boost\iterator\iterator_facade.hpp>
+//JN forward slash (backward slash incompatible with macos clang)
+#include <blink/iterator/detail.h>
+#include <blink/utility/index_sequence.h>
+#include <blink/iterator/zip_iterator.h>
+
+#include <boost/iterator/iterator_facade.hpp>
 
 #include <tuple>
 #include <type_traits>

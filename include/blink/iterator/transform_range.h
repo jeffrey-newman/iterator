@@ -13,9 +13,10 @@
 #ifndef BLINK_ITERATOR_TRANSFORM_RANGE_H_AHZ
 #define BLINK_ITERATOR_TRANSFORM_RANGE_H_AHZ
 
-#include <blink\utility\index_sequence.h>
-#include <blink\iterator\transform_iterator.h>
-#include <blink\iterator\detail.h>
+//JN Forward slashes (backward incompatible with macos clang)
+#include <blink/utility/index_sequence.h>
+#include <blink/iterator/transform_iterator.h>
+#include <blink/iterator/detail.h>
 
 #include <type_traits> // remove_reference
 #include <tuple>
