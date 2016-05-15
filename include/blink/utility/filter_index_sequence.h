@@ -26,7 +26,7 @@ namespace blink {
         template<std::size_t I>
         struct include
         {
-          static const bool value = Predicate< std::tuple_element<I, arg_tuple>::type >::value;
+          static const bool value = Predicate<typename std::tuple_element<I, arg_tuple>::type >::value;
         };
 
         template<std::size_t N, bool Include, std::size_t ...S>

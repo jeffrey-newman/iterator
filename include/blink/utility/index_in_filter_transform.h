@@ -35,7 +35,8 @@ namespace blink {
         template<std::size_t I>
         struct include
         {
-          static const bool value = Predicate < std::tuple_element<I, arg_tuple>::type >::value;
+        	//JN Macos Clang requires typename here...
+          static const bool value = Predicate < typename std::tuple_element<I, arg_tuple>::type >::value;
         };
 
         template<class Previous>

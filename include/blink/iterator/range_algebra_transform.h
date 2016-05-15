@@ -49,8 +49,9 @@ namespace blink {
       using input_type = decay_t<T>;
       const static bool is_range = is_range_algebra_wrapped < input_type >::value;
       
+        //JN no std::identity: hopefully this std::__identity is what is needed???
       using lazy_type = conditional_t<is_range, 
-        detail::get_value_type<input_type>, std::identity<input_type> >;
+        detail::get_value_type<input_type>, std::__identity<input_type> >;
 
       using type = typename lazy_type::type;
     };

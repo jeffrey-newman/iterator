@@ -16,6 +16,7 @@
 #include <blink/utility/index_sequence.h> 
 #include <tuple> 
 #include <cstddef> //size_t
+//#include <type_traits>
 
 namespace blink {
   namespace utility {
@@ -27,13 +28,13 @@ namespace blink {
       template<class F, class T, std::size_t... S>
       struct return_type_helper<F, T, index_sequence<S...> >
       {
-        using type = decltype(std::declval<std::decay_t<F> >()
-          (std::declval< typename std::tuple_element<S, std::decay_t<T> >::type >()...));
+        using type = decltype(std::declval<iterator::decay_t<F> >()
+          (std::declval< typename std::tuple_element<S, iterator::decay_t<T> >::type >()...));
       };
 
       template<class F, class T>
       using return_type = typename return_type_helper < F, T, make_index_sequence
-        < std::tuple_size<std::decay_t<T> >::value> >::type;
+        < std::tuple_size<iterator::decay_t<T> >::value> >::type;
 
       template<class F, class T, std::size_t... S>
       return_type<F, T> apply(F&& f, T&& t, index_sequence<S...>)
@@ -45,14 +46,15 @@ namespace blink {
       return_type<F, T> apply(F&& f, T&& t)
       {
         return apply(std::forward<F>(f), std::forward<T>(t)
-          , make_index_sequence < std::tuple_size<std::decay_t<T> >::value>{});
+                     , make_index_sequence < std::tuple_size<iterator::decay_t<T> >::value>{});
+          
       }
     } // detail
     template<class F, class Tuple>
     using apply_tuple_return_type = typename detail::return_type<F, Tuple>;
     
     template<class F, class Tuple>
-    apply_tuple_return_type<std::decay_t<F>, std::decay_t<Tuple>>
+    apply_tuple_return_type<iterator::decay_t<F>, iterator::decay_t<Tuple>>
       apply_tuple(F&& f, Tuple&& t)
     {
       return detail::apply(std::forward<F>(f), std::forward<Tuple>(t));

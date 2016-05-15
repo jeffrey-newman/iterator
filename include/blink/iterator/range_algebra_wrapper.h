@@ -73,10 +73,12 @@ namespace blink
 
        range_algebra_wrapper& operator--()
       {
-        auto i = r.begin();
+    	   //JN: is the r meant to be here???
+//        auto i = r.begin();
         auto j = begin();
         auto j_end = end();
-        for (; j != j_end; ++i, ++j)
+//        for (; j != j_end; ++i, ++j)
+        for (; j != j_end; ++j)
         {
           --(*j);
         }

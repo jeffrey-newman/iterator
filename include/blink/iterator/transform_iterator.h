@@ -164,7 +164,9 @@ namespace blink {
         static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
           , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
 
-        return std::distance(std::get<0>(m_iterators), that.get<0>());
+        // Mac os clang complains about that.get<0>() --- 'expected expression'
+//        return std::distance(std::get<0>(m_iterators), that.get<0>());
+        return std::distance(std::get<0>(m_iterators), std::get<0>(that));
       }
 
       template<class OtherFunction, class... OtherIterators >
@@ -173,7 +175,8 @@ namespace blink {
         static_assert(std::is_same < std::tuple< decay_t<OtherIterators>...>
           , std::tuple< decay_t <Iterators>... > > ::value, "incompatible iterators");
 
-        return std::get<0>(m_iterators) == that.get<0>();
+//        return std::get<0>(m_iterators) == that.get<0>();
+        return std::get<0>(m_iterators) == std::get<0>(that);
       }
 
     private:
